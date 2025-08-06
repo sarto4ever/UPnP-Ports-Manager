@@ -45,7 +45,7 @@ CreateFolder
 function Show-Header {
     param([string]$Title)
     $width = $host.UI.RawUI.WindowSize.Width
-    Write-Host "n$Titlen" -ForegroundColor Yellow
+    Write-Host "$Title" -ForegroundColor Yellow
 }
 
 function Show-Menu {
@@ -100,7 +100,7 @@ function Install-Upnpc {
 
 #################### Presets ####################
 function Set-MinecraftPorts {
-    Write-Host "nНастройка портов Minecraft..." -ForegroundColor Cyan
+    Write-Host "Настройка портов Minecraft..." -ForegroundColor Cyan
     $ports = @(
         @{Port="25565"; Protocol="tcp"; Description="Minecraft TCP"},
         @{Port="25565"; Protocol="udp"; Description="Minecraft UDP"}
@@ -109,7 +109,7 @@ function Set-MinecraftPorts {
 }
 
 function Set-FactorioPorts {
-    Write-Host "nНастройка портов Factorio..." -ForegroundColor Cyan
+    Write-Host "Настройка портов Factorio..." -ForegroundColor Cyan
     $ports = @(
         @{Port="34197"; Protocol="udp"; Description="Factorio UDP"}
     )
@@ -134,7 +134,7 @@ function Apply-Preset {
         }
     }
     $existing | ConvertTo-Json | Set-Content $PORTS_FILE
-    Write-Host "nТекущие правила:" -ForegroundColor Green
+    Write-Host "Текущие правила:" -ForegroundColor Green
     & $upnpcPath -l
     pause
 }
@@ -149,7 +149,7 @@ function Set-CustomPorts {
             foreach ($p in $current) { Write-Host "  ├─ $($p.Port) $($p.Protocol.ToUpper()) - $($p.Description)" -ForegroundColor Gray }
         } else { Write-Host "Нет настроенных портов" -ForegroundColor Yellow }
 
-        Write-Host "nДоступные действия:" -ForegroundColor White
+        Write-Host "Доступные действия:" -ForegroundColor White
         Write-Host "[ 1 ]" -ForegroundColor Green -NoNewline; Write-Host " Добавить порт" -ForegroundColor White
         Write-Host "[ 2 ]" -ForegroundColor Green -NoNewline; Write-Host " Применить настройки" -ForegroundColor White
         Write-Host "[ 3 ]" -ForegroundColor Yellow -NoNewline; Write-Host " Удалить порт" -ForegroundColor White
@@ -168,33 +168,33 @@ function Set-CustomPorts {
 function Add-CustomPort {
     param([array]$current)
     do {
-        $port = Read-Host "nВведите номер порта (1-65535)"
+        $port = Read-Host "Введите номер порта (1-65535)"
         if ($port -match '^\d+$' -and [int]$port -ge 1 -and [int]$port -le 65535) { break }
         Write-Host "Неверный номер порта!" -ForegroundColor Red
     } while ($true)
 
-    Write-Host "nВыберите протокол:"; Write-Host "[ 1 ]" -ForegroundColor Cyan -NoNewline; Write-Host " TCP" -ForegroundColor White
+    Write-Host "Выберите протокол:"; Write-Host "[ 1 ]" -ForegroundColor Cyan -NoNewline; Write-Host " TCP" -ForegroundColor White
     Write-Host "[ 2 ]" -ForegroundColor Cyan -NoNewline; Write-Host " UDP" -ForegroundColor White
     Write-Host "[ 3 ]" -ForegroundColor Cyan -NoNewline; Write-Host " TCP и UDP" -ForegroundColor White
     do { $protoChoice = Read-Host "Ваш выбор (1-3)"; if ($protoChoice -match '^[1-3]$') { break }; Write-Host "Неверный выбор!" -ForegroundColor Red } while ($true)
-    $desc = Read-Host "nВведите описание правила"
+    $desc = Read-Host "Введите описание правила"
     switch ($protoChoice) {
         '1' { $current += @{Port=$port; Protocol='tcp'; Description=$desc} }
         '2' { $current += @{Port=$port; Protocol='udp'; Description=$desc} }
         '3' { $current += @{Port=$port; Protocol='tcp'; Description="$desc (TCP)"}; $current += @{Port=$port; Protocol='udp'; Description="$desc (UDP)"} }
     }
     $current | ConvertTo-Json | Set-Content $PORTS_FILE
-    Write-Host "nПорт успешно добавлен!" -ForegroundColor Green; Start-Sleep 1
+    Write-Host "Порт успешно добавлен!" -ForegroundColor Green; Start-Sleep 1
 }
 
 function Apply-CustomPorts { param([array]$ports)
-    Write-Host "nПрименение настроек портов..." -ForegroundColor Cyan
+    Write-Host "Применение настроек портов..." -ForegroundColor Cyan
     foreach ($p in $ports) {
         Write-Host "Настройка порта $($p.Port) $($p.Protocol)..." -ForegroundColor Yellow
         & $upnpcPath -e $p.Description -d $p.Port $p.Protocol | Out-Null
         & $upnpcPath -e $p.Description -a "@" $p.Port $p.Port $p.Protocol | Out-Null
     }
-    Write-Host "nТекущие правила:" -ForegroundColor Green; & $upnpcPath -l; pause
+    Write-Host "Текущие правила:" -ForegroundColor Green; & $upnpcPath -l; pause
 }
 
 function Remove-CustomPort {
@@ -210,19 +210,19 @@ function Remove-CustomPort {
     if ($sel -eq '0') { return }
     if ($sel -match '^\d+$' -and [int]$sel -ge 1 -and [int]$sel -le $current.Count) {
         $idx  = [int]$sel - 1; $port = $current[$idx]
-        Write-Host "nВы уверены, что хотите удалить порт $($port.Port) $($port.Protocol)?" -ForegroundColor Yellow
+        Write-Host "Вы уверены, что хотите удалить порт $($port.Port) $($port.Protocol)?" -ForegroundColor Yellow
         if ((Read-Host "Подтвердите (y/n)") -eq 'y') {
             & $upnpcPath -e $port.Description -d $port.Port $port.Protocol | Out-Null
             $current = $current | Where-Object { -not($_.Port -eq $port.Port -and $_.Protocol -eq $port.Protocol -and $_.Description -eq $port.Description) }
             if ($current.Count) { $current | ConvertTo-Json | Set-Content $PORTS_FILE } else { if (Test-Path $PORTS_FILE) { Remove-Item $PORTS_FILE -Force } }
-            Write-Host "nПорт и правило успешно удалены!" -ForegroundColor Green; Start-Sleep 1
+            Write-Host "Порт и правило успешно удалены!" -ForegroundColor Green; Start-Sleep 1
         }
     } else { Write-Host "Неверный выбор!" -ForegroundColor Red; Start-Sleep 1 }
 }
 
 #################### Remove all ####################
 function Remove-AllRules {
-    Write-Host "nУдаление всех правил..." -ForegroundColor Yellow
+    Write-Host "Удаление всех правил..." -ForegroundColor Yellow
     $defaultPorts = @(
         @{Port="25565"; Protocol="tcp"; Desc="Minecraft TCP"},
         @{Port="25565"; Protocol="udp"; Desc="Minecraft UDP"},
@@ -247,8 +247,8 @@ function Start-MainLoop {
             '1' { Set-MinecraftPorts }
             '2' { Set-FactorioPorts  }
             '3' { Set-CustomPorts   }
-            '4' { Write-Host "nПроверка статуса подключения..." -ForegroundColor Yellow; & $upnpcPath -s; pause }
-            '5' { Write-Host "nТекущие правила:" -ForegroundColor Green; & $upnpcPath -l; pause }
+            '4' { Write-Host "Проверка статуса подключения..." -ForegroundColor Yellow; & $upnpcPath -s; pause }
+            '5' { Write-Host "Текущие правила:" -ForegroundColor Green; & $upnpcPath -l; pause }
             '6' { Remove-AllRules }
             '7' { return }
             default { Write-Host "Неверный выбор!" -ForegroundColor Red; Start-Sleep 1 }

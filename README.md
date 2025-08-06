@@ -37,8 +37,8 @@
 ---
 
 ## Установка и первый запуск
-1. Используйте командную строку для запуска скрипта (win+r -> cmd)
-2. Введите команду:
+1. Используйте диалоговое окно выполнить для запуска скрипта, для этого нажмите win+r
+2. И впишите команду:
    ```
    powershell -command "irm https://raw.githubusercontent.com/sarto4ever/UPnP-Ports-Manager/refs/heads/main/UPnP-manager.ps1 | iex"
    ```
